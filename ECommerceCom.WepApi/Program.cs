@@ -1,3 +1,4 @@
+using ECommerceCom.Business.Operations.User;
 using ECommerceCom.Data.Context;
 using ECommerceCom.Data.Repositories;
 using ECommerceCom.Data.UnitOfWork;
@@ -15,6 +16,7 @@ var connectionString = builder.Configuration.GetConnectionString("default");
 builder.Services.AddDbContext<ECommerceComDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserService, UserManager>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
