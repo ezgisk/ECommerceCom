@@ -1,4 +1,5 @@
-﻿using ECommerceCom.Business.Operations.User.Dtos;
+﻿using ECommerceCom.Business.DataProtection;
+using ECommerceCom.Business.Operations.User.Dtos;
 using ECommerceCom.Business.Types;
 using ECommerceCom.Data.Entities;
 using ECommerceCom.Data.Repositories;
@@ -15,10 +16,12 @@ namespace ECommerceCom.Business.Operations.User
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<UserEntity> _userRepository;
-        public UserManager(IUnitOfWork unitOfWork, IRepository<UserEntity> UserRepository)
+        private readonly IDataProtection _protector;
+        public UserManager(IUnitOfWork unitOfWork, IRepository<UserEntity> UserRepository, IDataProtection protector)
         {
             _unitOfWork = unitOfWork;
             _userRepository = UserRepository;
+            _protector = protector;
         }
         public async Task<ServiceMessage> AddUser(AddUserDto user)
         {
@@ -37,7 +40,7 @@ namespace ECommerceCom.Business.Operations.User
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Password = user.Password,
+                Password = _protector.Protect(user.Password),
 
             };
             _userRepository.Add(userEntity);
@@ -46,9 +49,9 @@ namespace ECommerceCom.Business.Operations.User
             {
                 await _unitOfWork.SaveChangesAsync();
             }
-            catch (Exception) 
+            catch (Exception ex)
             {
-                throw new Exception("Kullanici kaydi sirasinda bir hata olustu..");
+                throw new Exception($"Kullanici kaydi sirasinda bir hata olustu: {ex.Message}", ex);
             }
             return new ServiceMessage 
             {

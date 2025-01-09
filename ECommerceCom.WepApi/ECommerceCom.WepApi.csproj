@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="App_Data\Keys\key-0a676a96-ed87-4dab-a139-2f1861d07faa.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="App_Data\Keys\key-0a676a96-ed87-4dab-a139-2f1861d07faa.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

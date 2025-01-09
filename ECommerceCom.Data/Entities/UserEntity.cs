@@ -1,63 +1,60 @@
 ﻿using ECommerceCom.Data.Enums;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ECommerceCom.Data.Entities
 {
     public class UserEntity : BaseEntity
     {
-        public string FirstName { get; set; } = string.Empty; 
-        public string LastName { get; set; } = string.Empty; 
-        public string Email { get; set; } = string.Empty; 
-        public string PhoneNumber { get; set; } = string.Empty; 
-        public string Password { get; set; } = string.Empty; 
+        public string FirstName { get; set; } = string.Empty; // Varsayılan değer
+        public string LastName { get; set; } = string.Empty;  // Varsayılan değer
+        public string Email { get; set; } = string.Empty;     // Varsayılan değer
+        public string? PhoneNumber { get; set; }             // Nullable yapıldı
+        public string Password { get; set; } = string.Empty; // Varsayılan değer
         public UserRole Role { get; set; }
         public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
     }
+
     public class UserConfiguration : BaseConfiguration<UserEntity>
     {
         public override void Configure(EntityTypeBuilder<UserEntity> builder)
         {
+            // FirstName alanı
             builder.Property(x => x.FirstName)
                    .IsRequired()
                    .HasMaxLength(50);
 
+            // LastName alanı
             builder.Property(x => x.LastName)
                    .IsRequired()
                    .HasMaxLength(50);
 
+            // Email alanı
             builder.Property(x => x.Email)
                    .IsRequired()
                    .HasMaxLength(100);
 
+            // Email alanına benzersiz bir indeks ekleniyor
             builder.HasIndex(x => x.Email)
-                   .IsUnique(); 
+                   .IsUnique();
 
- 
+            // PhoneNumber alanı
             builder.Property(x => x.PhoneNumber)
                    .HasMaxLength(15);
 
-
+            // Password alanı
             builder.Property(x => x.Password)
                    .IsRequired();
 
-
-            builder.Property(x => x.Role)
-                   .IsRequired();
-
-        
+            // Orders ile ilişki tanımlanıyor
             builder.HasMany(x => x.Orders)
                    .WithOne(o => o.Customer)
                    .HasForeignKey(o => o.CustomerId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Base sınıf konfigürasyonu
             base.Configure(builder);
         }
     }
-
 }

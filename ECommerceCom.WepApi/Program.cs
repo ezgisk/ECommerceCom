@@ -1,7 +1,9 @@
+using ECommerceCom.Business.DataProtection;
 using ECommerceCom.Business.Operations.User;
 using ECommerceCom.Data.Context;
 using ECommerceCom.Data.Repositories;
 using ECommerceCom.Data.UnitOfWork;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,11 +14,19 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IDataProtection, DataProtection>();
+var keyDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "Keys"));
+builder.Services.AddDataProtection()
+    .SetApplicationName("ECommerceCom")
+    .PersistKeysToFileSystem(keyDirectory);
+
 var connectionString = builder.Configuration.GetConnectionString("default");
 builder.Services.AddDbContext<ECommerceComDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserService, UserManager>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
