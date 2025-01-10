@@ -4,6 +4,7 @@ using ECommerceCom.WepApi.Models;
 using ECommerceCom.Business.Operations.User.Dtos;
 using ECommerceCom.Business.Operations.User;
 using ECommerceCom.WepApi.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerceCom.WepApi.Controllers
 {
@@ -69,6 +70,12 @@ namespace ECommerceCom.WepApi.Controllers
                 Token = token,
             });
 
+        }
+        [HttpGet("me")]
+        [Authorize]
+        public IActionResult GetMyUser()
+        {
+            return Ok();
         }
 
 
