@@ -16,7 +16,7 @@ namespace ECommerceCom.WepApi.Controllers
         {
             _userService = userService;
         }
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
             if (!ModelState.IsValid)
@@ -36,6 +36,20 @@ namespace ECommerceCom.WepApi.Controllers
             else
                 return BadRequest(result.Message);
         }
-        
+        [HttpPost("Login")]
+        public IActionResult Login(LoginRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var result = _userService.LoginUser(new LoginUserDto { Email = request.Email, Password = request.Password });
+            if(!result.IsSucceed)
+                return BadRequest(result.Message);
+
+
+        }
+
+
     }
 }

@@ -3,8 +3,12 @@ using ECommerceCom.Business.Operations.User;
 using ECommerceCom.Data.Context;
 using ECommerceCom.Data.Repositories;
 using ECommerceCom.Data.UnitOfWork;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Net.Http;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +24,24 @@ var keyDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRoo
 builder.Services.AddDataProtection()
     .SetApplicationName("ECommerceCom")
     .PersistKeysToFileSystem(keyDirectory);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuers"],
+
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true,
+
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt: SecretKey"]))
+        };
+
+    });
 
 var connectionString = builder.Configuration.GetConnectionString("default");
 builder.Services.AddDbContext<ECommerceComDbContext>(options => options.UseNpgsql(connectionString));
@@ -37,7 +59,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

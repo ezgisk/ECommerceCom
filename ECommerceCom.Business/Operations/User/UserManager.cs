@@ -2,6 +2,7 @@
 using ECommerceCom.Business.Operations.User.Dtos;
 using ECommerceCom.Business.Types;
 using ECommerceCom.Data.Entities;
+using ECommerceCom.Data.Enums;
 using ECommerceCom.Data.Repositories;
 using ECommerceCom.Data.UnitOfWork;
 using System;
@@ -25,9 +26,9 @@ namespace ECommerceCom.Business.Operations.User
         }
         public async Task<ServiceMessage> AddUser(AddUserDto user)
         {
-            var hasMail = _userRepository.GetAll(x=>x.Email.ToLower() == user.Email.ToLower());
+            var hasMail = _userRepository.GetAll(x => x.Email.ToLower() == user.Email.ToLower());
 
-            if (hasMail.Any()) 
+            if (hasMail.Any())
             {
                 return new ServiceMessage
                 {
@@ -41,6 +42,7 @@ namespace ECommerceCom.Business.Operations.User
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Password = _protector.Protect(user.Password),
+                Role = UserRole.Customer
 
             };
             _userRepository.Add(userEntity);
@@ -53,11 +55,50 @@ namespace ECommerceCom.Business.Operations.User
             {
                 throw new Exception($"Kullanici kaydi sirasinda bir hata olustu: {ex.Message}", ex);
             }
-            return new ServiceMessage 
+            return new ServiceMessage
             {
-                IsSucceed = true 
+                IsSucceed = true
             };
 
+        }
+
+        public ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user)
+        {
+            var userEntity = _userRepository.Get(x => x.Email.ToLower() == user.Email.ToLower());
+            if (userEntity == null)
+            {
+                return new ServiceMessage<UserInfoDto>
+                {
+                    IsSucceed = false,
+                    Message = "Kullanici adi ve sifre hatali."
+
+                };
+            }
+            var unprotectedText = _protector.UnProtect(userEntity.Password);
+            if (unprotectedText == user.Password)
+            {
+                return new ServiceMessage<UserInfoDto>
+                {
+                    IsSucceed = true,
+                    Data = new UserInfoDto
+                    {
+                        Email = userEntity.Email,
+                        FirstName = userEntity.FirstName,
+                        LastName = userEntity.LastName,
+                        Role = userEntity.Role,
+                    }
+                };
+            }
+            else
+            {
+                return new ServiceMessage<UserInfoDto>
+                {
+                    IsSucceed = false,
+                    Message = "Kullanici adi ve sifre hatali."
+
+                };
+            }
+            
         }
     }
 }
