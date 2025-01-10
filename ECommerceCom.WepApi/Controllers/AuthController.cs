@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ECommerceCom.WepApi.Models;
 using ECommerceCom.Business.Operations.User.Dtos;
 using ECommerceCom.Business.Operations.User;
+using ECommerceCom.WepApi.Jwt;
 
 namespace ECommerceCom.WepApi.Controllers
 {
@@ -12,7 +13,7 @@ namespace ECommerceCom.WepApi.Controllers
     {
         private readonly IUserService _userService;
 
-        public AuthController(IUserService userService) 
+        public AuthController(IUserService userService)
         {
             _userService = userService;
         }
@@ -44,9 +45,29 @@ namespace ECommerceCom.WepApi.Controllers
                 return BadRequest(ModelState);
             }
             var result = _userService.LoginUser(new LoginUserDto { Email = request.Email, Password = request.Password });
-            if(!result.IsSucceed)
+            if (!result.IsSucceed)
                 return BadRequest(result.Message);
+            var user = result.Data;
 
+            var configuration = HttpContext.RequestServices.GetService<IConfiguration>();
+            var token = JwtHelper.GenerateJwtToken(new JwtDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.FirstName,
+                LastName = user.LastName,
+                Role = user.Role,
+                SecretKey = configuration["Jwt:SecretKey"],
+                Audience = configuration["Jwt:Audience"],
+                Issuer = configuration["Jwt:Issuer"],
+                ExpireMinutes = int.Parse(configuration["Jwt:ExpireMinutes"]!)
+
+            });
+            return Ok(new LoginResponse
+            {
+                Message =" Giris basariyla tamamlandi",
+                Token = token,
+            });
 
         }
 
