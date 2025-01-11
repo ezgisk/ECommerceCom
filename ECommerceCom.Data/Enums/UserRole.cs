@@ -8,6 +8,6 @@ namespace ECommerceCom.Data.Enums
 {
     public enum UserRole
     {
-        Customer,Admin
+        Admin,Customer
     }
 }

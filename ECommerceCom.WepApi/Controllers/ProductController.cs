@@ -1,6 +1,7 @@
 ﻿using ECommerceCom.Business.Operations.Feautere.Dtos;
 using ECommerceCom.Business.Operations.Order.Dtos;
 using ECommerceCom.WepApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace ECommerceCom.WepApi.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> AddProduct(AddProductRequest request)
         {
             // AddProductRequest'i AddProductDto'ya dönüştürme
