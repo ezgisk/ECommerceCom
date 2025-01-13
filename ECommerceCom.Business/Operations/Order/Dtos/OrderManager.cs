@@ -6,6 +6,7 @@ using ECommerceCom.Business.Operations.Order.Dtos; // Ensure you include the cor
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceCom.Business.Operations.Order
 {
@@ -14,13 +15,15 @@ namespace ECommerceCom.Business.Operations.Order
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<OrderEntity> _orderRepository;
         private readonly IRepository<OrderProductEntity> _orderProductRepository;
+        private readonly IRepository<ProductEntity> _productRepository; // Add product repository for product details
 
         public OrderManager(IUnitOfWork unitOfWork, IRepository<OrderEntity> orderRepository,
-            IRepository<OrderProductEntity> orderProductRepository)
+            IRepository<OrderProductEntity> orderProductRepository, IRepository<ProductEntity> productRepository)
         {
             _unitOfWork = unitOfWork;
             _orderRepository = orderRepository;
             _orderProductRepository = orderProductRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<ServiceMessage> AddOrder(AddOrderDto order)
@@ -80,6 +83,52 @@ namespace ECommerceCom.Business.Operations.Order
                 IsSucceed = true,
                 Message = "Sipariş başarıyla oluşturuldu."
             };
+        }
+
+        public async Task<List<OrderDetailsDto>> GetHotels()
+        {
+            var orders = await _orderRepository.GetAll().
+                 Select(x => new OrderDetailsDto
+                 {
+                     Id = x.Id,  // Set the order ID
+                     OrderDate = x.OrderDate,  // Set the order date from the order entity
+                     TotalAmount = x.TotalAmount,  // Set the total amount from the order entity
+                     CustomerName = x.Customer != null ? x.Customer.FirstName + x.Customer.LastName : "Unknown",  // Safely access customer name, handle null
+                                                                                                                  // You can add any other fields that belong to the order entity here
+                     OrderProducts = x.OrderProducts.Select(op => new OrderProductDto
+                     {
+                         ProductId = op.ProductId,  // Map product ID
+                         Quantity = op.Quantity,    // Map quantity of the ordered product
+                         UnitPrice = op.Product != null ? op.Product.Price : 0, // Safely access product price, handle null
+                         ProductName = op.Product != null ? op.Product.ProductName : "Unknown" // Safely access product name, handle null
+                     }).ToList()  // Collect all order products in a list
+                 })
+            .ToListAsync();
+            return orders;
+
+        }
+
+        public async Task<OrderDetailsDto> GetOrder(int orderId)
+        {
+            var order = await _orderRepository.GetAll(x => x.Id == orderId).
+                 Select(x => new OrderDetailsDto
+                 {
+                     Id = x.Id,  // Set the order ID
+                     OrderDate = x.OrderDate,  // Set the order date from the order entity
+                     TotalAmount = x.TotalAmount,  // Set the total amount from the order entity
+                     CustomerName = x.Customer != null ? x.Customer.FirstName +x.Customer.LastName : "Unknown",  // Safely access customer name, handle null
+                                                                                       // You can add any other fields that belong to the order entity here
+                     OrderProducts = x.OrderProducts.Select(op => new OrderProductDto
+                     {
+                         ProductId = op.ProductId,  // Map product ID
+                         Quantity = op.Quantity,    // Map quantity of the ordered product
+                         UnitPrice = op.Product != null ? op.Product.Price : 0, // Safely access product price, handle null
+                         ProductName = op.Product != null ? op.Product.ProductName : "Unknown" // Safely access product name, handle null
+                     }).ToList()  // Collect all order products in a list
+                 })
+        .FirstOrDefaultAsync();
+
+            return order;
         }
     }
 }

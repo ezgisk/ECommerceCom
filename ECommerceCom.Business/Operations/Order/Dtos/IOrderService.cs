@@ -10,5 +10,7 @@ namespace ECommerceCom.Business.Operations.Order.Dtos
     public interface IOrderService
     {
         Task<ServiceMessage> AddOrder(AddOrderDto order);
+        Task<OrderDetailsDto> GetOrder(int orderId);
+        Task<List<OrderDetailsDto>> GetHotels();
     }
 }
