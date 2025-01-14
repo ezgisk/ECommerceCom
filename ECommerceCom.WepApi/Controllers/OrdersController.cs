@@ -34,6 +34,7 @@ namespace ECommerceCom.WepApi.Controllers
 
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
             var result = await _orderService.DeleteOrder(id);
@@ -83,6 +84,7 @@ namespace ECommerceCom.WepApi.Controllers
         }
 
         [HttpPatch("{id}/totalAmount")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdjustOrderTotalAmount(int id, decimal changeTo)
         {
             var result = await _orderService.AdjustOrderTotalAmount(id, changeTo);
