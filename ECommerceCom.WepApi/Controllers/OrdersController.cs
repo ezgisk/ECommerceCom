@@ -29,8 +29,18 @@ namespace ECommerceCom.WepApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrders()
         {
-            var orders = await _orderService.GetHotels();
+            var orders = await _orderService.GetOrders();
             return Ok(orders);
+
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrder(int id)
+        {
+            var result = await _orderService.DeleteOrder(id);
+            if (!result.IsSucceed)
+                return NotFound(result.Message);
+            else
+                return Ok();
 
         }
 
@@ -71,5 +81,16 @@ namespace ECommerceCom.WepApi.Controllers
 
             return Ok(new { Message = "Order successfully created." }); // Return OK response if the order was successfully created
         }
+
+        [HttpPatch("{id}/totalAmount")]
+        public async Task<IActionResult> AdjustOrderTotalAmount(int id, decimal changeTo)
+        {
+            var result = await _orderService.AdjustOrderTotalAmount(id, changeTo);
+            if (!result.IsSucceed)
+                return NotFound();
+            else
+                return Ok();
+        }
+
     }
 }

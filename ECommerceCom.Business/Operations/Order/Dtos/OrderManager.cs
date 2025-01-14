@@ -85,7 +85,63 @@ namespace ECommerceCom.Business.Operations.Order
             };
         }
 
-        public async Task<List<OrderDetailsDto>> GetHotels()
+        public async Task<ServiceMessage> AdjustOrderTotalAmount(int id, decimal changeTo)
+        {
+            var order = _orderRepository.GetById(id);
+            if (order == null)
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Bu id ile eslesen order bulanamadi."
+                };
+            order.TotalAmount = changeTo;
+            _orderRepository.Update(order);
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Order degistirilirken bir hata oluştu: {ex.Message}", ex);
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "Order başarıyla oluşturuldu."
+            };
+
+        }
+
+        public async Task<ServiceMessage> DeleteOrder(int id)
+        {
+            var order = _orderRepository.GetById(id);
+            if (order == null)
+            { 
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Bu id ile eslesen order bulanamadi."
+                };
+            }
+            _orderRepository.Delete(id);
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Order degistirilirken bir hata oluştu: {ex.Message}", ex);
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "Order başarıyla oluşturuldu."
+            };
+        }
+
+        public async Task<List<OrderDetailsDto>> GetOrders()
         {
             var orders = await _orderRepository.GetAll().
                  Select(x => new OrderDetailsDto
@@ -93,7 +149,7 @@ namespace ECommerceCom.Business.Operations.Order
                      Id = x.Id,  // Set the order ID
                      OrderDate = x.OrderDate,  // Set the order date from the order entity
                      TotalAmount = x.TotalAmount,  // Set the total amount from the order entity
-                     CustomerName = x.Customer != null ? x.Customer.FirstName + x.Customer.LastName : "Unknown",  // Safely access customer name, handle null
+                     CustomerId = x.CustomerId,  // Safely access customer name, handle null
                                                                                                                   // You can add any other fields that belong to the order entity here
                      OrderProducts = x.OrderProducts.Select(op => new OrderProductDto
                      {
@@ -104,7 +160,7 @@ namespace ECommerceCom.Business.Operations.Order
                      }).ToList()  // Collect all order products in a list
                  })
             .ToListAsync();
-            return orders;
+            return  orders;
 
         }
 

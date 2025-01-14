@@ -11,6 +11,8 @@ namespace ECommerceCom.Business.Operations.Order.Dtos
     {
         Task<ServiceMessage> AddOrder(AddOrderDto order);
         Task<OrderDetailsDto> GetOrder(int orderId);
-        Task<List<OrderDetailsDto>> GetHotels();
+        Task<List<OrderDetailsDto>> GetOrders();
+        Task<ServiceMessage> AdjustOrderTotalAmount(int id, decimal changeTo);
+        Task<ServiceMessage> DeleteOrder(int id);
     }
 }

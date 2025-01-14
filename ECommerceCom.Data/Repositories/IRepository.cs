@@ -13,7 +13,7 @@ namespace ECommerceCom.Data.Repositories
         void Delete(TEntity entity);
         void Delete( int id );
         void Update(TEntity entity);
-        TEntity GeyByID(int id);
+        TEntity GetById(int id);
         TEntity Get(Expression<Func<TEntity, bool>> predicate);
         IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate = null);
 

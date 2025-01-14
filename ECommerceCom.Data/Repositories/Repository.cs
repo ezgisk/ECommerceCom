@@ -28,10 +28,11 @@ namespace ECommerceCom.Data.Repositories
 
         public void Delete(TEntity entity)
         {
-            entity.ModifiedDate = DateTime.Now;
+            entity.ModifiedDate = DateTime.UtcNow;  // Yerel zamanı değil UTC zamanını kullanıyoruz
             entity.IsDeleted = true;
             _dbSet.Update(entity);
         }
+
         public void Delete(int id)
         {
             var entity = _dbSet.Find(id);
@@ -45,7 +46,7 @@ namespace ECommerceCom.Data.Repositories
         {
             return predicate is null ? _dbSet : _dbSet.Where(predicate);
         }
-        public TEntity GeyByID(int id)
+        public TEntity GetById(int id)
         {
             return _dbSet.Find(id);
         }

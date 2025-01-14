@@ -38,14 +38,14 @@ namespace ECommerceCom.Data.Context
                 var entityType = entity.Entity as BaseEntity;
                 if (entityType != null)
                 {
-                    // Ensure CreatedAt is in UTC
-                    if (entityType.CreatedDate.Kind != DateTimeKind.Utc)
+                    // Check if CreatedDate is not null and not in UTC, then convert to UTC
+                    if (entityType.CreatedDate != null && entityType.CreatedDate.Kind != DateTimeKind.Utc)
                     {
                         entityType.CreatedDate = entityType.CreatedDate.ToUniversalTime();
                     }
 
-                    // Ensure UpdatedAt is in UTC
-                    if (entityType.UpdatedDate.Kind != DateTimeKind.Utc)
+                    // Check if UpdatedDate is not null and not in UTC, then convert to UTC
+                    if (entityType.UpdatedDate != null && entityType.UpdatedDate.Kind != DateTimeKind.Utc)
                     {
                         entityType.UpdatedDate = entityType.UpdatedDate.ToUniversalTime();
                     }
@@ -55,5 +55,7 @@ namespace ECommerceCom.Data.Context
             // Call the base SaveChangesAsync method to persist changes
             return await base.SaveChangesAsync(cancellationToken);
         }
+
+
     }
 }
