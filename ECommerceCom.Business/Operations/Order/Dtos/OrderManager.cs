@@ -117,7 +117,7 @@ namespace ECommerceCom.Business.Operations.Order
         {
             var order = _orderRepository.GetById(id);
             if (order == null)
-            { 
+            {
                 return new ServiceMessage
                 {
                     IsSucceed = false,
@@ -150,7 +150,7 @@ namespace ECommerceCom.Business.Operations.Order
                      OrderDate = x.OrderDate,  // Set the order date from the order entity
                      TotalAmount = x.TotalAmount,  // Set the total amount from the order entity
                      CustomerId = x.CustomerId,  // Safely access customer name, handle null
-                                                                                                                  // You can add any other fields that belong to the order entity here
+                                                 // You can add any other fields that belong to the order entity here
                      OrderProducts = x.OrderProducts.Select(op => new OrderProductDto
                      {
                          ProductId = op.ProductId,  // Map product ID
@@ -160,7 +160,7 @@ namespace ECommerceCom.Business.Operations.Order
                      }).ToList()  // Collect all order products in a list
                  })
             .ToListAsync();
-            return  orders;
+            return orders;
 
         }
 
@@ -172,8 +172,8 @@ namespace ECommerceCom.Business.Operations.Order
                      Id = x.Id,  // Set the order ID
                      OrderDate = x.OrderDate,  // Set the order date from the order entity
                      TotalAmount = x.TotalAmount,  // Set the total amount from the order entity
-                     CustomerName = x.Customer != null ? x.Customer.FirstName +x.Customer.LastName : "Unknown",  // Safely access customer name, handle null
-                                                                                       // You can add any other fields that belong to the order entity here
+                     CustomerName = x.Customer != null ? x.Customer.FirstName + x.Customer.LastName : "Unknown",  // Safely access customer name, handle null
+                                                                                                                  // You can add any other fields that belong to the order entity here
                      OrderProducts = x.OrderProducts.Select(op => new OrderProductDto
                      {
                          ProductId = op.ProductId,  // Map product ID
@@ -186,5 +186,85 @@ namespace ECommerceCom.Business.Operations.Order
 
             return order;
         }
+
+        public async Task<ServiceMessage> UpdateOrder(UpdateOrderDto order)
+        {
+            var orderEntity = _orderRepository.GetById(order.OrderId);
+            if (orderEntity == null)
+            {
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Order bulunamadı."
+                };
+            }
+
+            await _unitOfWork.BeginTransaction();
+            try
+            {
+                // Sipariş bilgilerini güncelleme
+                if (order.TotalAmount.HasValue)
+                {
+                    orderEntity.TotalAmount = order.TotalAmount.Value;
+                }
+
+                if (order.CustomerId.HasValue)
+                {
+                    orderEntity.CustomerId = order.CustomerId.Value;
+                }
+
+                // Siparişi güncelliyoruz
+                _orderRepository.Update(orderEntity);
+
+                // Eski ürünleri ilişki tablosundan (OrderProduct) siliyoruz
+                var existingOrderProducts = _orderProductRepository.GetAll(x => x.OrderId == orderEntity.Id).ToList();
+                foreach (var product in existingOrderProducts)
+                {
+                    _orderProductRepository.Delete(product);
+                }
+
+                // Yeni ürünleri ekliyoruz
+                foreach (var productId in order.OrderProductIds)
+                {
+                    var orderProduct = new OrderProductEntity
+                    {
+                        OrderId = orderEntity.Id,
+                        ProductId = productId
+                    };
+
+                    // OrderProduct zaten varsa güncelle
+                    var existingOrderProduct = orderEntity.OrderProducts.FirstOrDefault(op => op.ProductId == productId);
+                    if (existingOrderProduct != null)
+                    {
+                        existingOrderProduct.Quantity += 1; // Örneğin, miktarı güncelleme
+                    }
+                    else
+                    {
+                        _orderProductRepository.Add(orderProduct); // Yeni ürün ekleme
+                    }
+                }
+
+                // Tüm değişiklikleri kaydediyoruz
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransaction();
+
+                return new ServiceMessage
+                {
+                    IsSucceed = true,
+                    Message = "Order başarıyla güncellendi."
+                };
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollBackTransaction();
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = $"Order güncellenirken bir hata oluştu: {ex.Message}"
+                };
+            }
+        }
+
+
     }
 }

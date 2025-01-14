@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using ECommerceCom.Business.Operations.Order;
+using System.Data;
 
 namespace ECommerceCom.WepApi.Controllers
 {
@@ -93,6 +95,34 @@ namespace ECommerceCom.WepApi.Controllers
             else
                 return Ok();
         }
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderDto updateOrderRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Model doğrulama hatalarını döner
+            }
+
+            var updateOrderDto = new UpdateOrderDto
+            {
+                OrderId = id,
+                TotalAmount = updateOrderRequest.TotalAmount,
+                OrderProductIds = updateOrderRequest.OrderProductIds,
+                CustomerId = updateOrderRequest.CustomerId,
+                ProductQuantities = updateOrderRequest.ProductQuantities // Product Quantities ekleniyor
+            };
+
+            var result = await _orderService.UpdateOrder(updateOrderDto);
+
+            if (!result.IsSucceed)
+            {
+                return NotFound(result.Message);
+            }
+
+            return await GetOrder(id);
+        }
+
 
     }
 }

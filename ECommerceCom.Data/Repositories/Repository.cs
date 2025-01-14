@@ -26,11 +26,17 @@ namespace ECommerceCom.Data.Repositories
             _dbSet.Add(entity);
         }
 
-        public void Delete(TEntity entity)
+        public void Delete(TEntity entity, bool softDelete = true)
         {
+            if (softDelete) { 
             entity.ModifiedDate = DateTime.UtcNow;  // Yerel zamanı değil UTC zamanını kullanıyoruz
             entity.IsDeleted = true;
             _dbSet.Update(entity);
+            }
+            else
+            {
+                _dbSet.Remove(entity);
+            }
         }
 
         public void Delete(int id)
