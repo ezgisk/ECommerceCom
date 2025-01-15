@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using ECommerceCom.Business.Operations.Order;
 using System.Data;
+using ECommerceCom.WepApi.Filters;
 
 namespace ECommerceCom.WepApi.Controllers
 {
@@ -87,6 +88,8 @@ namespace ECommerceCom.WepApi.Controllers
 
         [HttpPatch("{id}/totalAmount")]
         [Authorize(Roles = "Admin")]
+        [TimeControllerFilter]
+
         public async Task<IActionResult> AdjustOrderTotalAmount(int id, decimal changeTo)
         {
             var result = await _orderService.AdjustOrderTotalAmount(id, changeTo);
@@ -97,6 +100,7 @@ namespace ECommerceCom.WepApi.Controllers
         }
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
+        [TimeControllerFilter]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderDto updateOrderRequest)
         {
             if (!ModelState.IsValid)
