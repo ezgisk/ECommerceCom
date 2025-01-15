@@ -1,4 +1,5 @@
 ﻿using ECommerceCom.Business.Operations.Setting.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -15,6 +16,7 @@ namespace ECommerceCom.WepApi.Controllers
             _settingService = settingService;
         }
         [HttpPatch]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> ToggleMaintenence()
         {
             await _settingService.ToggleMaintenence();

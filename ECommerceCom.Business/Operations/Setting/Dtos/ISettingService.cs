@@ -9,5 +9,6 @@ namespace ECommerceCom.Business.Operations.Setting.Dtos
     public interface ISettingService
     {
         Task ToggleMaintenence();
+        bool GetMaintanenceState();
     }
 }

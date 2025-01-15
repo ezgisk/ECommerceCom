@@ -7,6 +7,7 @@ using ECommerceCom.Business.Operations.User;
 using ECommerceCom.Data.Context;
 using ECommerceCom.Data.Repositories;
 using ECommerceCom.Data.UnitOfWork;
+using ECommerceCom.WepApi.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -86,7 +87,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMaintenanceMode();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

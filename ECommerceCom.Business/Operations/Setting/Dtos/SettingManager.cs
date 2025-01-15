@@ -20,6 +20,12 @@ namespace ECommerceCom.Business.Operations.Setting.Dtos
             _unitOfWork = unitOfWork;
         }
 
+        public bool GetMaintanenceState()
+        {
+            var maintenanceState = _settingRepository.GetById(1).MaintanenceMode;
+            return maintenanceState;
+        }
+
         public async Task ToggleMaintenence()
         {
             var setting = _settingRepository.GetById(1);
