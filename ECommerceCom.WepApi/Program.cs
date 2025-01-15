@@ -2,6 +2,7 @@ using ECommerceCom.Business.DataProtection;
 using ECommerceCom.Business.Operations.Feautere.Dtos;
 using ECommerceCom.Business.Operations.Order;
 using ECommerceCom.Business.Operations.Order.Dtos;
+using ECommerceCom.Business.Operations.Setting.Dtos;
 using ECommerceCom.Business.Operations.User;
 using ECommerceCom.Data.Context;
 using ECommerceCom.Data.Repositories;
@@ -47,6 +48,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<IDataProtection, DataProtection>();
 builder.Services.AddScoped<IProductService, ProductManager>();
 builder.Services.AddScoped<IOrderService, OrderManager>();
+builder.Services.AddScoped<ISettingService, SettingManager>();
 var keyDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "Keys"));
 builder.Services.AddDataProtection()
     .SetApplicationName("ECommerceCom")
