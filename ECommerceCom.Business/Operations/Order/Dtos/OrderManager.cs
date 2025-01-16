@@ -131,13 +131,13 @@ namespace ECommerceCom.Business.Operations.Order
             }
             catch (Exception ex)
             {
-                throw new Exception($"Order degistirilirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"Order silinirken bir hata oluştu: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Order başarıyla oluşturuldu."
+                Message = "Order başarıyla silindi."
             };
         }
 

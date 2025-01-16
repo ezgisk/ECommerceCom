@@ -50,6 +50,7 @@ builder.Services.AddScoped<IDataProtection, DataProtection>();
 builder.Services.AddScoped<IProductService, ProductManager>();
 builder.Services.AddScoped<IOrderService, OrderManager>();
 builder.Services.AddScoped<ISettingService, SettingManager>();
+
 var keyDirectory = new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "Keys"));
 builder.Services.AddDataProtection()
     .SetApplicationName("ECommerceCom")
