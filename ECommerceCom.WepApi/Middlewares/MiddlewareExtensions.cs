@@ -6,5 +6,9 @@
         {
             return app.UseMiddleware<MaintenanceMiddleware>();
         }
+        public static IApplicationBuilder UseLoggingMode(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<LoggingMiddleware>();
+        }
     }
 }

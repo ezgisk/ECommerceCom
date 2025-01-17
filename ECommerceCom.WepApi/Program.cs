@@ -15,8 +15,15 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Net.Http;
 using System.Text;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()  // Konsola log yazma
+    .WriteTo.File("logs/ecommerceApp.txt", rollingInterval: RollingInterval.Day)  // Dosyaya log yazma
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 
@@ -89,6 +96,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseMaintenanceMode();
+app.UseLoggingMode();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
