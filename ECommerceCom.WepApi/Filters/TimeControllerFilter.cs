@@ -6,42 +6,41 @@ namespace ECommerceCom.WepApi.Filters
 {
     public class TimeControllerFilter : ActionFilterAttribute
     {
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
+        public string StartTime { get; set; } // Başlangıç saati
+        public string EndTime { get; set; } // Bitiş saati
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             // Şu anki UTC zamanı alıyoruz
             var utcNow = DateTime.UtcNow;
 
-            // Amerikan zaman dilimine dönüştürme (Örnek: Eastern Standard Time - EST / UTC-5)
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-            var americanTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
-
-            // Zamanı loglayalım
-            Console.WriteLine($"UTC Time: {utcNow}, American Time: {americanTime}");
+            // Loglama ile şu anki UTC zamanı
+            Console.WriteLine($"UTC Time: {utcNow}");
 
             // StartTime ve EndTime saatlerini doğru formatta ayarlıyoruz
-            StartTime = "10:00 PM";  // Doğru format
-            EndTime = "11:59 PM";    // Doğru format
+            // UTC zaman diliminde geçerli bir format belirliyoruz
+            StartTime = "01:00 PM";  // Örnek başlangıç saati
+            EndTime = "02:00 PM";    // Örnek bitiş saati
 
             // StartTime ve EndTime saatlerini DateTime.ParseExact ile doğru formatta dönüştürüyoruz
             var startTime = DateTime.ParseExact(StartTime, "hh:mm tt", null);
             var endTime = DateTime.ParseExact(EndTime, "hh:mm tt", null);
 
-            // Loglama ile saat dilimi farklarını görelim
-            Console.WriteLine($"Current Time: {americanTime}, Start Time: {startTime}, End Time: {endTime}");
+            // Loglama ile saatleri görelim
+            Console.WriteLine($"Start Time (UTC): {startTime}, End Time (UTC): {endTime}");
 
-            // Saatlerin sadece TimeOfDay kısmını karşılaştırıyoruz
-            if (americanTime.TimeOfDay >= startTime.TimeOfDay && americanTime.TimeOfDay <= endTime.TimeOfDay)
+            // UTC zamanını saat diliminden bağımsız olarak karşılaştırıyoruz
+            if (utcNow.TimeOfDay >= startTime.TimeOfDay && utcNow.TimeOfDay <= endTime.TimeOfDay)
             {
+                // Saat dilimi arasında istek kabul ediliyor
                 base.OnActionExecuting(context);
             }
             else
             {
+                // Saat dilimi dışındaysa 403 hata kodu döndürüyoruz
                 context.Result = new ContentResult
                 {
-                    Content = "Bu saatler arasında end-pointe istek atılamaz.",
+                    Content = "Bu saatler arasında endpoint'e istek atılamaz.",
                     StatusCode = 403
                 };
             }

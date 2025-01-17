@@ -24,6 +24,7 @@ namespace ECommerceCom.Business.Operations.User
             _userRepository = UserRepository;
             _protector = protector;
         }
+
         public async Task<ServiceMessage> AddUser(AddUserDto user)
         {
             var hasMail = _userRepository.GetAll(x => x.Email.ToLower() == user.Email.ToLower());
@@ -62,6 +63,103 @@ namespace ECommerceCom.Business.Operations.User
 
         }
 
+        public async Task<ServiceMessage> AdjustUserEmail(int id, string changeTo)
+        {
+            var user = _userRepository.GetById(id);
+            if (user == null)
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Bu id ile eslesen user bulanamadi."
+                };
+            user.Email = changeTo;
+            _userRepository.Update(user);
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Email degistirilirken bir hata oluştu: {ex.Message}", ex);
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "Email başarıyla degistirildi."
+            };
+        }
+
+        public async Task<ServiceMessage> DeleteUser(int id)
+        {
+            var order = _userRepository.GetById(id);
+            if (order == null)
+            {
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "Bu id ile eslesen user bulanamadi."
+                };
+            }
+            _userRepository.Delete(id);
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"User silinirken bir hata oluştu: {ex.Message}", ex);
+            }
+
+            return new ServiceMessage
+            {
+                IsSucceed = true,
+                Message = "User başarıyla silindi."
+            };
+        }
+
+        public async Task<UserInfoDto> GetUser(int id)
+        {
+            // Kullanıcıyı ID'ye göre veritabanından al
+            var userEntity = _userRepository.Get(x => x.Id == id); // Asenkron çağrı ile kullanıcıyı bul
+
+            // Eğer kullanıcı bulunamazsa, null dönülecek
+            if (userEntity == null)
+            {
+                throw new Exception("Kullanıcı bulunamadı");
+            }
+
+            // UserEntity'yi UserInfoDto'ya dönüştür
+            var userDto = new UserInfoDto
+            {
+                Id = userEntity.Id,
+                Email = userEntity.Email,
+                FirstName = userEntity.FirstName,
+                LastName = userEntity.LastName,
+                Role = userEntity.Role
+            };
+
+            return userDto;
+        }
+
+        public async Task<List<UserInfoDto>> GetUsers()
+        {
+            // Tüm kullanıcıları veritabanından al
+            var userEntities = _userRepository.GetAll(); // Asenkron çağrı
+
+            // UserEntity listesini UserInfoDto listesine dönüştür
+            var userDtos = userEntities.Select(user => new UserInfoDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Role = user.Role
+            }).ToList();
+
+            return userDtos;
+        }
+
         public ServiceMessage<UserInfoDto> LoginUser(LoginUserDto user)
         {
             var userEntity = _userRepository.Get(x => x.Email.ToLower() == user.Email.ToLower());
@@ -98,7 +196,78 @@ namespace ECommerceCom.Business.Operations.User
 
                 };
             }
-            
+
+        }
+
+        public async Task<ServiceMessage> UpdateUser(UpdateUserDto user)
+        {
+            var userEntity = _userRepository.GetById(user.Id);
+            if (userEntity == null)
+            {
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = "User bulunamadı."
+                };
+            }
+
+            await _unitOfWork.BeginTransaction();
+            try
+            {
+                // Kullanıcı bilgilerini güncelleyerek işlemi başlatıyoruz
+                if (!string.IsNullOrEmpty(user.FirstName))
+                {
+                    userEntity.FirstName = user.FirstName;
+                }
+
+                if (!string.IsNullOrEmpty(user.LastName))
+                {
+                    userEntity.LastName = user.LastName;
+                }
+
+                if (!string.IsNullOrEmpty(user.Email))
+                {
+                    // Email adresini kontrol et (eğer varsa başka bir kullanıcıya ait olmasın)
+                    var existingEmailUser = _userRepository.GetAll(x => x.Email.ToLower() == user.Email.ToLower() && x.Id != user.Id).FirstOrDefault();
+                    if (existingEmailUser != null)
+                    {
+                        return new ServiceMessage
+                        {
+                            IsSucceed = false,
+                            Message = "Bu email adresi zaten başka bir kullanıcı tarafından kullanılmaktadır."
+                        };
+                    }
+
+                    userEntity.Email = user.Email;
+                }
+
+                if (user.Role != null)
+                {
+                    userEntity.Role = user.Role;
+                }
+
+                // Kullanıcıyı güncelliyoruz
+                _userRepository.Update(userEntity);
+
+                // Tüm değişiklikleri kaydediyoruz
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransaction();
+
+                return new ServiceMessage
+                {
+                    IsSucceed = true,
+                    Message = "Kullanıcı başarıyla güncellendi."
+                };
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollBackTransaction();
+                return new ServiceMessage
+                {
+                    IsSucceed = false,
+                    Message = $"Kullanıcı güncellenirken bir hata oluştu: {ex.Message}"
+                };
+            }
         }
     }
 }

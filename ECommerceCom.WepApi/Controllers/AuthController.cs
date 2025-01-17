@@ -5,6 +5,9 @@ using ECommerceCom.Business.Operations.User.Dtos;
 using ECommerceCom.Business.Operations.User;
 using ECommerceCom.WepApi.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using ECommerceCom.Business.Operations.Order.Dtos;
+using ECommerceCom.WepApi.Filters;
+using ECommerceCom.Business.Operations.Order;
 
 namespace ECommerceCom.WepApi.Controllers
 {
@@ -71,13 +74,79 @@ namespace ECommerceCom.WepApi.Controllers
             });
 
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var order = await _userService.GetUser(id);
+            if (order is null)
+                return NotFound();
+            else
+                return Ok(order);
+        }
         [HttpGet("me")]
         [Authorize]
         public IActionResult GetMyUser()
         {
             return Ok();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _userService.GetUsers();
+            return Ok(users);
 
+        }
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var result = await _userService.DeleteUser(id);
+            if (!result.IsSucceed)
+                return NotFound(result.Message);
+            else
+                return Ok();
+
+        }
+        [HttpPatch("{id}/email")]
+        [Authorize(Roles = "Admin")]
+        [TimeControllerFilter]
+        public async Task<IActionResult> AdjustUserEmail(int id, string changeTo)
+        {
+            var result = await _userService.AdjustUserEmail(id, changeTo);
+            if (!result.IsSucceed)
+                return NotFound();
+            else
+                return Ok();
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        [TimeControllerFilter]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto updateUserRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Model doğrulama hatalarını döner
+            }
+
+            var updateUserDto = new UpdateUserDto
+            {
+                Id = id,
+                Email = updateUserRequest.Email,
+                FirstName = updateUserRequest.FirstName,
+                LastName = updateUserRequest.LastName,
+                Role= updateUserRequest.Role 
+            };
+
+            var result = await _userService.UpdateUser(updateUserDto);
+
+            if (!result.IsSucceed)
+            {
+                return NotFound(result.Message);
+            }
+
+            return await GetUser(id);
+        }
 
     }
 }
