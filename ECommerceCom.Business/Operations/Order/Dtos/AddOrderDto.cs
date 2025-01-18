@@ -9,9 +9,9 @@ namespace ECommerceCom.Business.Operations.Order.Dtos
 {
     public class AddOrderDto
     {
-        public int OrderId { get; set; } // The created order's ID
-        public DateTime OrderDate { get; set; } // Date the order was placed
-        public decimal TotalAmount { get; set; } // Total amount for the order
+        public int OrderId { get; set; } 
+        public DateTime OrderDate { get; set; } 
+        public decimal TotalAmount { get; set; } 
         public int CustomerId { get; set; } // Customer ID associated with the order
         public List<AddOrderProductDto> OrderProducts { get; set; } = new List<AddOrderProductDto>(); // List of products in the order
     }

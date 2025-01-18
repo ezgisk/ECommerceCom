@@ -9,6 +9,6 @@ namespace ECommerceCom.Business.Operations.Order.Dtos
     public class AddOrderProductDto
     {
         public int ProductId { get; set; } // The ID of the ordered product
-        public int Quantity { get; set; } // The quantity of the ordered product
+        public int Quantity { get; set; } 
     }
 }

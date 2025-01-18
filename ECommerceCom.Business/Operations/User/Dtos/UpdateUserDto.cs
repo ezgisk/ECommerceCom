@@ -10,20 +10,20 @@ namespace ECommerceCom.Business.Operations.User.Dtos
 {
     public class UpdateUserDto
     {
-        [Required(ErrorMessage = "Id gereklidir.")]
+        [Required]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Email gereklidir.")]
-        [EmailAddress(ErrorMessage = "Geçerli bir email adresi giriniz.")]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "FirstName gereklidir.")]
+        [Required]
         public string FirstName { get; set; }
 
-        [Required(ErrorMessage = "LastName gereklidir.")]
+        [Required]
         public string LastName { get; set; }
 
-        [Required(ErrorMessage = "Role gereklidir.")]
+        [Required]
         public UserRole Role { get; set; }
     }
 }

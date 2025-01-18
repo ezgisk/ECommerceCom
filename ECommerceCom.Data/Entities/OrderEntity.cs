@@ -28,18 +28,18 @@ namespace ECommerceCom.Data.Entities
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-            // Customer ilişkisini yapılandırma
-            builder.HasOne(x => x.Customer) // Order, bir Customer'a sahip
-                .WithMany() // Customer, birden fazla Order'a sahip olabilir
+            // Configuring the relationship with Customer
+            builder.HasOne(x => x.Customer) // Order has one Customer
+                .WithMany() // Customer can have many Orders
                 .HasForeignKey(x => x.CustomerId) // Foreign Key
-                .OnDelete(DeleteBehavior.Cascade); // Silme davranışı (optional)
+                .OnDelete(DeleteBehavior.Cascade); // Deletion behavior (optional)
 
-            // OrderProducts ilişkisini yapılandırma
-            builder.HasMany(x => x.OrderProducts) // Order, birden fazla OrderProduct'a sahip
-                .WithOne(x => x.Order) // OrderProduct, bir Order'a sahip
+            // Configuring the relationship with OrderProducts
+            builder.HasMany(x => x.OrderProducts) // Order can have many OrderProducts
+                .WithOne(x => x.Order) // OrderProduct has one Order
                 .HasForeignKey(x => x.OrderId); // Foreign Key
 
-            // base.Configure çağrısı, tüm ortak yapılandırmaların yapılması için
+            // Call to base.Configure for all common configurations
             base.Configure(builder);
         }
     }

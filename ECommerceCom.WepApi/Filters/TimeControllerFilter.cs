@@ -6,43 +6,42 @@ namespace ECommerceCom.WepApi.Filters
 {
     public class TimeControllerFilter : ActionFilterAttribute
     {
-        public string StartTime { get; set; } // Başlangıç saati
-        public string EndTime { get; set; } // Bitiş saati
+        public string StartTime { get; set; } // Start time
+        public string EndTime { get; set; } // End time
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            // Şu anki UTC zamanı alıyoruz
+            // Get the current UTC time
             var utcNow = DateTime.UtcNow;
 
-            // Loglama ile şu anki UTC zamanı
+            // Log the current UTC time
             Console.WriteLine($"UTC Time: {utcNow}");
 
-            // StartTime ve EndTime saatlerini doğru formatta ayarlıyoruz
-            // UTC zaman diliminde geçerli bir format belirliyoruz
-            StartTime = "01:00 PM";  // Örnek başlangıç saati
-            EndTime = "02:00 PM";    // Örnek bitiş saati
+            // Set the start and end times in UTC
+            StartTime = "01:00 AM";  // Start time: 1:00 AM UTC
+            EndTime = "02:00 AM";    // End time: 2:00 AM UTC
 
-            // StartTime ve EndTime saatlerini DateTime.ParseExact ile doğru formatta dönüştürüyoruz
-            var startTime = DateTime.ParseExact(StartTime, "hh:mm tt", null);
-            var endTime = DateTime.ParseExact(EndTime, "hh:mm tt", null);
+            // Convert the start and end times to DateTime objects
+            var startTime = DateTime.ParseExact(StartTime, "hh:mm tt", null).TimeOfDay;
+            var endTime = DateTime.ParseExact(EndTime, "hh:mm tt", null).TimeOfDay;
 
-            // Loglama ile saatleri görelim
+            // Log the start and end times
             Console.WriteLine($"Start Time (UTC): {startTime}, End Time (UTC): {endTime}");
 
-            // UTC zamanını saat diliminden bağımsız olarak karşılaştırıyoruz
-            if (utcNow.TimeOfDay >= startTime.TimeOfDay && utcNow.TimeOfDay <= endTime.TimeOfDay)
+            // Compare the current UTC time against the start and end times
+            if (utcNow.TimeOfDay >= startTime && utcNow.TimeOfDay < endTime)
             {
-                // Saat dilimi arasında istek kabul ediliyor
-                base.OnActionExecuting(context);
+                // If the request is within the restricted time range, return 403 Forbidden
+                context.Result = new ContentResult
+                {
+                    Content = "Requests cannot be made to this endpoint during this time frame.",
+                    StatusCode = 403
+                };
             }
             else
             {
-                // Saat dilimi dışındaysa 403 hata kodu döndürüyoruz
-                context.Result = new ContentResult
-                {
-                    Content = "Bu saatler arasında endpoint'e istek atılamaz.",
-                    StatusCode = 403
-                };
+                // If the request is outside the restricted time range, allow the request to proceed
+                base.OnActionExecuting(context);
             }
         }
     }

@@ -8,8 +8,8 @@ namespace ECommerceCom.WepApi.Models
         public int OrderId { get; set; }
         [Required]
         [Range(0.01, double.MaxValue, ErrorMessage = "Total amount must be greater than zero.")]
-        public decimal? TotalAmount { get; set; } // Toplam tutar zorunlu (nullable fakat geçerli olmalı)
+        public decimal? TotalAmount { get; set; } 
         public ICollection<int> OrderProductIds { get; set; } = new List<int>();
-        public int? CustomerId { get; set; } // Müşteri bilgisi opsiyonel
+        public int? CustomerId { get; set; } 
     }
 }

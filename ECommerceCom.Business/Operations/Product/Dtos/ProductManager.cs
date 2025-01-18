@@ -21,17 +21,16 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
             _repository = repository;
             _unitOfWork = unitOfWork;
         }
+
         public async Task<ServiceMessage> AddProduct(AddProductDto product)
         {
             var hasProduct = _repository.GetAll(x => x.ProductName.ToLower() == product.ProductName.ToLower() && x.Price == product.Price).Any();
-            if (hasProduct) 
+            if (hasProduct)
             {
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Boyle bir urun bulunuyor"
-
-
+                    Message = "A product with the same name and price already exists."
                 };
             }
             var productEntity = new ProductEntity
@@ -39,7 +38,6 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
                 ProductName = product.ProductName,
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
-
             };
             _repository.Add(productEntity);
             try
@@ -48,9 +46,9 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
             }
             catch (Exception ex)
             {
-                throw new Exception($"Product kaydi sirasinda bir hata olustu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while adding the product: {ex.Message}", ex);
             }
-            return new ServiceMessage 
+            return new ServiceMessage
             {
                 IsSucceed = true
             };
@@ -63,7 +61,7 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen product bulanamadi."
+                    Message = "No product found with the given ID."
                 };
             product.StockQuantity = changeTo;
             _repository.Update(product);
@@ -73,25 +71,25 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
             }
             catch (Exception ex)
             {
-                throw new Exception($"Product degistirilirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while adjusting the product: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Product başarıyla oluşturuldu."
+                Message = "Product successfully updated."
             };
         }
 
         public async Task<ServiceMessage> DeleteProduct(int id)
         {
-            var order = _repository.GetById(id);
-            if (order == null)
+            var product = _repository.GetById(id);
+            if (product == null)
             {
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen product bulanamadi."
+                    Message = "No product found with the given ID."
                 };
             }
             _repository.Delete(id);
@@ -101,26 +99,26 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
             }
             catch (Exception ex)
             {
-                throw new Exception($"Product silinirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while deleting the product: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Product başarıyla silindi."
+                Message = "Product successfully deleted."
             };
         }
 
         public async Task<List<ProductDto>> GetAllProducts()
         {
-            var products = _repository.GetAll(); // veya _context.Products.ToListAsync() kullanabilirsiniz.
+            var products = _repository.GetAll();
 
             if (products == null || !products.Any())
             {
-                return new List<ProductDto>(); // Eğer ürün yoksa boş liste döndür
+                return new List<ProductDto>(); // Return an empty list if no products are found
             }
 
-            // Ürünleri ProductDto'ya dönüştürüyoruz
+            // Convert products to ProductDto
             var productDtos = products.Select(product => new ProductDto
             {
                 ProductId = product.Id,
@@ -134,15 +132,15 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
 
         public async Task<ProductDto> GetProduct(int id)
         {
-            var product =  _repository.GetById(id);
+            var product = _repository.GetById(id);
 
-            // Ürün bulunamazsa, null dönebiliriz veya uygun bir hata mesajı döndürebiliriz
+            // If product is not found, return null or an appropriate error message
             if (product == null)
             {
-                return null; // veya hata mesajı döndürebilirsiniz
+                return null; 
             }
 
-            // Ürün bulunduysa, ProductDto'ya dönüştürüyoruz
+            // If product is found, convert it to ProductDto
             var productDto = new ProductDto
             {
                 ProductId = product.Id,
@@ -151,7 +149,7 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
                 StockQuantity = product.StockQuantity
             };
 
-            return productDto; // DTO'yu döndürüyoruz
+            return productDto; 
         }
 
         public async Task<ServiceMessage> UpdateProduct(UpdateProductDto product)
@@ -163,57 +161,56 @@ namespace ECommerceCom.Business.Operations.Feautere.Dtos
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Product bulunamadı."
+                    Message = "Product not found."
                 };
             }
 
-            // İşlem başlangıcında bir transaction başlatıyoruz
+            // Start a transaction at the beginning of the process
             await _unitOfWork.BeginTransaction();
 
             try
             {
-                // Gelen DTO'dan yeni değerleri alıyoruz
+                // Get the new values from the DTO
                 if (!string.IsNullOrEmpty(product.ProductName))
                 {
-                    productEntity.ProductName = product.ProductName; // Ürün adını güncelle
+                    productEntity.ProductName = product.ProductName; // Update product name
                 }
 
                 if (product.Price > 0)
                 {
-                    productEntity.Price = product.Price; // Fiyatı güncelle
+                    productEntity.Price = product.Price; // Update price
                 }
 
                 if (product.StockQuantity >= 0)
                 {
-                    productEntity.StockQuantity = product.StockQuantity; // Stok miktarını güncelle
+                    productEntity.StockQuantity = product.StockQuantity; // Update stock quantity
                 }
 
-                // Ürünü güncelliyoruz
+                // Update the product
                 _repository.Update(productEntity);
 
-                // Değişiklikleri kaydediyoruz
+                
                 await _unitOfWork.SaveChangesAsync();
 
-                // Transaction'ı başarılı şekilde commit ediyoruz
+                // Commit the transaction if everything is successful
                 await _unitOfWork.CommitTransaction();
 
                 return new ServiceMessage
                 {
                     IsSucceed = true,
-                    Message = "Product başarıyla güncellendi."
+                    Message = "Product successfully updated."
                 };
             }
             catch (Exception ex)
             {
-                // Hata durumunda transaction'ı geri alıyoruz
+                // Rollback the transaction in case of an error
                 await _unitOfWork.RollBackTransaction();
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = $"Product güncellenirken bir hata oluştu: {ex.Message}"
+                    Message = $"An error occurred while updating the product: {ex.Message}"
                 };
             }
         }
     }
- }
-
+}

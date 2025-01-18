@@ -23,7 +23,7 @@ namespace ECommerceCom.WepApi.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddProduct(AddProductRequest request)
         {
-            // AddProductRequest'i AddProductDto'ya dönüştürme
+            
             var addProductDto = new AddProductDto
             {
                 Price = request.Price,
@@ -31,7 +31,6 @@ namespace ECommerceCom.WepApi.Controllers
                 StockQuantity = request.StockQuantity
             };
 
-            // Asenkron işlem çağrısı
             var result = await _productService.AddProduct(addProductDto);
 
             if (result.IsSucceed)
@@ -83,7 +82,7 @@ namespace ECommerceCom.WepApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Model doğrulama hatalarını döner
+                return BadRequest(ModelState); 
             }
 
             var updateProductDto = new UpdateProductDto

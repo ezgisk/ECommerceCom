@@ -19,7 +19,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()  // Konsola log yazma
+    .WriteTo.Console()  
     .WriteTo.File("logs/ecommerceApp.txt", rollingInterval: RollingInterval.Day)  // Dosyaya log yazma
     .CreateLogger();
 
@@ -100,7 +100,5 @@ app.UseLoggingMode();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

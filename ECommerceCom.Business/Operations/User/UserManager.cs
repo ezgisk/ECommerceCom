@@ -34,7 +34,7 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Email adresi zaten mevcut"
+                    Message = "The email address is already in use"
                 };
             }
             var userEntity = new UserEntity()
@@ -44,7 +44,6 @@ namespace ECommerceCom.Business.Operations.User
                 LastName = user.LastName,
                 Password = _protector.Protect(user.Password),
                 Role = UserRole.Customer
-
             };
             _userRepository.Add(userEntity);
 
@@ -54,13 +53,12 @@ namespace ECommerceCom.Business.Operations.User
             }
             catch (Exception ex)
             {
-                throw new Exception($"Kullanici kaydi sirasinda bir hata olustu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while registering the user: {ex.Message}", ex);
             }
             return new ServiceMessage
             {
                 IsSucceed = true
             };
-
         }
 
         public async Task<ServiceMessage> AdjustUserEmail(int id, string changeTo)
@@ -70,7 +68,7 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen user bulanamadi."
+                    Message = "User with the given ID not found."
                 };
             user.Email = changeTo;
             _userRepository.Update(user);
@@ -80,25 +78,25 @@ namespace ECommerceCom.Business.Operations.User
             }
             catch (Exception ex)
             {
-                throw new Exception($"Email degistirilirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while changing the email: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Email başarıyla degistirildi."
+                Message = "Email successfully changed."
             };
         }
 
         public async Task<ServiceMessage> DeleteUser(int id)
         {
-            var order = _userRepository.GetById(id);
-            if (order == null)
+            var user = _userRepository.GetById(id);
+            if (user == null)
             {
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen user bulanamadi."
+                    Message = "User with the given ID not found."
                 };
             }
             _userRepository.Delete(id);
@@ -108,28 +106,25 @@ namespace ECommerceCom.Business.Operations.User
             }
             catch (Exception ex)
             {
-                throw new Exception($"User silinirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while deleting the user: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "User başarıyla silindi."
+                Message = "User successfully deleted."
             };
         }
 
         public async Task<UserInfoDto> GetUser(int id)
         {
-            // Kullanıcıyı ID'ye göre veritabanından al
-            var userEntity = _userRepository.Get(x => x.Id == id); // Asenkron çağrı ile kullanıcıyı bul
+            var userEntity = _userRepository.Get(x => x.Id == id);
 
-            // Eğer kullanıcı bulunamazsa, null dönülecek
             if (userEntity == null)
             {
-                throw new Exception("Kullanıcı bulunamadı");
+                throw new Exception("User not found");
             }
 
-            // UserEntity'yi UserInfoDto'ya dönüştür
             var userDto = new UserInfoDto
             {
                 Id = userEntity.Id,
@@ -144,10 +139,8 @@ namespace ECommerceCom.Business.Operations.User
 
         public async Task<List<UserInfoDto>> GetUsers()
         {
-            // Tüm kullanıcıları veritabanından al
-            var userEntities = _userRepository.GetAll(); // Asenkron çağrı
+            var userEntities = _userRepository.GetAll();
 
-            // UserEntity listesini UserInfoDto listesine dönüştür
             var userDtos = userEntities.Select(user => new UserInfoDto
             {
                 Id = user.Id,
@@ -168,8 +161,7 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage<UserInfoDto>
                 {
                     IsSucceed = false,
-                    Message = "Kullanici adi ve sifre hatali."
-
+                    Message = "Username or password is incorrect."
                 };
             }
             var unprotectedText = _protector.UnProtect(userEntity.Password);
@@ -192,11 +184,9 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage<UserInfoDto>
                 {
                     IsSucceed = false,
-                    Message = "Kullanici adi ve sifre hatali."
-
+                    Message = "Username or password is incorrect."
                 };
             }
-
         }
 
         public async Task<ServiceMessage> UpdateUser(UpdateUserDto user)
@@ -207,14 +197,13 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "User bulunamadı."
+                    Message = "User not found."
                 };
             }
 
             await _unitOfWork.BeginTransaction();
             try
             {
-                // Kullanıcı bilgilerini güncelleyerek işlemi başlatıyoruz
                 if (!string.IsNullOrEmpty(user.FirstName))
                 {
                     userEntity.FirstName = user.FirstName;
@@ -227,14 +216,13 @@ namespace ECommerceCom.Business.Operations.User
 
                 if (!string.IsNullOrEmpty(user.Email))
                 {
-                    // Email adresini kontrol et (eğer varsa başka bir kullanıcıya ait olmasın)
                     var existingEmailUser = _userRepository.GetAll(x => x.Email.ToLower() == user.Email.ToLower() && x.Id != user.Id).FirstOrDefault();
                     if (existingEmailUser != null)
                     {
                         return new ServiceMessage
                         {
                             IsSucceed = false,
-                            Message = "Bu email adresi zaten başka bir kullanıcı tarafından kullanılmaktadır."
+                            Message = "This email address is already used by another user."
                         };
                     }
 
@@ -246,17 +234,14 @@ namespace ECommerceCom.Business.Operations.User
                     userEntity.Role = user.Role;
                 }
 
-                // Kullanıcıyı güncelliyoruz
                 _userRepository.Update(userEntity);
-
-                // Tüm değişiklikleri kaydediyoruz
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransaction();
 
                 return new ServiceMessage
                 {
                     IsSucceed = true,
-                    Message = "Kullanıcı başarıyla güncellendi."
+                    Message = "User successfully updated."
                 };
             }
             catch (Exception ex)
@@ -265,7 +250,7 @@ namespace ECommerceCom.Business.Operations.User
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = $"Kullanıcı güncellenirken bir hata oluştu: {ex.Message}"
+                    Message = $"An error occurred while updating the user: {ex.Message}"
                 };
             }
         }

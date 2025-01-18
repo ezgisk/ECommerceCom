@@ -126,7 +126,7 @@ namespace ECommerceCom.WepApi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Model doğrulama hatalarını döner
+                return BadRequest(ModelState); 
             }
 
             var updateUserDto = new UpdateUserDto

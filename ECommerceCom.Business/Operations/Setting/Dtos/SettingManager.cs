@@ -36,7 +36,7 @@ namespace ECommerceCom.Business.Operations.Setting.Dtos
             }
             catch (Exception) 
             {
-                throw new Exception("Bakim yapilirken bir hatayla karsilasildi");
+                throw new Exception("An error occurred while performing maintenance");
             }
         }
     }

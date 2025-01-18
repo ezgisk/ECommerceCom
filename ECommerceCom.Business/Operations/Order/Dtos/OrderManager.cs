@@ -35,7 +35,7 @@ namespace ECommerceCom.Business.Operations.Order
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu müşteri için bu tarihte bir sipariş zaten mevcut."
+                    Message = "An order already exists for this customer on this date."
                 };
             }
 
@@ -75,13 +75,13 @@ namespace ECommerceCom.Business.Operations.Order
             catch (Exception ex)
             {
                 await _unitOfWork.RollBackTransaction(); // Rollback if anything goes wrong
-                throw new Exception($"Order kaydı sırasında bir hata oluştu, süreç başa sarıldı: {ex.Message}", ex);
+                throw new Exception($"An error occurred while creating the order, the process was rolled back: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Sipariş başarıyla oluşturuldu."
+                Message = "The order was successfully created."
             };
         }
 
@@ -92,7 +92,7 @@ namespace ECommerceCom.Business.Operations.Order
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen order bulanamadi."
+                    Message = "No order found with the provided ID."
                 };
             order.TotalAmount = changeTo;
             _orderRepository.Update(order);
@@ -102,15 +102,14 @@ namespace ECommerceCom.Business.Operations.Order
             }
             catch (Exception ex)
             {
-                throw new Exception($"Order degistirilirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while adjusting the order: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Order başarıyla oluşturuldu."
+                Message = "Order successfully updated."
             };
-
         }
 
         public async Task<ServiceMessage> DeleteOrder(int id)
@@ -121,7 +120,7 @@ namespace ECommerceCom.Business.Operations.Order
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Bu id ile eslesen order bulanamadi."
+                    Message = "No order found with the provided ID."
                 };
             }
             _orderRepository.Delete(id);
@@ -131,13 +130,13 @@ namespace ECommerceCom.Business.Operations.Order
             }
             catch (Exception ex)
             {
-                throw new Exception($"Order silinirken bir hata oluştu: {ex.Message}", ex);
+                throw new Exception($"An error occurred while deleting the order: {ex.Message}", ex);
             }
 
             return new ServiceMessage
             {
                 IsSucceed = true,
-                Message = "Order başarıyla silindi."
+                Message = "Order successfully deleted."
             };
         }
 
@@ -161,7 +160,6 @@ namespace ECommerceCom.Business.Operations.Order
                  })
             .ToListAsync();
             return orders;
-
         }
 
         public async Task<OrderDetailsDto> GetOrder(int orderId)
@@ -195,14 +193,14 @@ namespace ECommerceCom.Business.Operations.Order
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = "Order bulunamadı."
+                    Message = "Order not found."
                 };
             }
 
             await _unitOfWork.BeginTransaction();
             try
             {
-                // Sipariş bilgilerini güncelleme
+                // Update order details
                 if (order.TotalAmount.HasValue)
                 {
                     orderEntity.TotalAmount = order.TotalAmount.Value;
@@ -213,17 +211,15 @@ namespace ECommerceCom.Business.Operations.Order
                     orderEntity.CustomerId = order.CustomerId.Value;
                 }
 
-                // Siparişi güncelliyoruz
                 _orderRepository.Update(orderEntity);
 
-                // Eski ürünleri ilişki tablosundan (OrderProduct) siliyoruz
                 var existingOrderProducts = _orderProductRepository.GetAll(x => x.OrderId == orderEntity.Id).ToList();
                 foreach (var product in existingOrderProducts)
                 {
                     _orderProductRepository.Delete(product);
                 }
 
-                // Yeni ürünleri ekliyoruz
+                // Add new products
                 foreach (var productId in order.OrderProductIds)
                 {
                     var orderProduct = new OrderProductEntity
@@ -232,26 +228,26 @@ namespace ECommerceCom.Business.Operations.Order
                         ProductId = productId
                     };
 
-                    // OrderProduct zaten varsa güncelle
+                    // Update existing order products if they already exist
                     var existingOrderProduct = orderEntity.OrderProducts.FirstOrDefault(op => op.ProductId == productId);
                     if (existingOrderProduct != null)
                     {
-                        existingOrderProduct.Quantity += 1; // Örneğin, miktarı güncelleme
+                        existingOrderProduct.Quantity += 1; // For example, update the quantity
                     }
                     else
                     {
-                        _orderProductRepository.Add(orderProduct); // Yeni ürün ekleme
+                        _orderProductRepository.Add(orderProduct); // Add new product
                     }
                 }
 
-                // Tüm değişiklikleri kaydediyoruz
+                // Save all changes
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransaction();
 
                 return new ServiceMessage
                 {
                     IsSucceed = true,
-                    Message = "Order başarıyla güncellendi."
+                    Message = "Order successfully updated."
                 };
             }
             catch (Exception ex)
@@ -260,11 +256,9 @@ namespace ECommerceCom.Business.Operations.Order
                 return new ServiceMessage
                 {
                     IsSucceed = false,
-                    Message = $"Order güncellenirken bir hata oluştu: {ex.Message}"
+                    Message = $"An error occurred while updating the order: {ex.Message}"
                 };
             }
         }
-
-
     }
 }

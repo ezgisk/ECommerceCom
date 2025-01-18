@@ -7,11 +7,11 @@ namespace ECommerceCom.Data.Entities
 {
     public class UserEntity : BaseEntity
     {
-        public string FirstName { get; set; } = string.Empty; // Varsayılan değer
-        public string LastName { get; set; } = string.Empty;  // Varsayılan değer
-        public string Email { get; set; } = string.Empty;     // Varsayılan değer
-        public string? PhoneNumber { get; set; }             // Nullable yapıldı
-        public string Password { get; set; } = string.Empty; // Varsayılan değer
+        public string FirstName { get; set; } = string.Empty; 
+        public string LastName { get; set; } = string.Empty;  
+        public string Email { get; set; } = string.Empty;     
+        public string? PhoneNumber { get; set; }             
+        public string Password { get; set; } = string.Empty; 
         public UserRole Role { get; set; }
         public ICollection<OrderEntity> Orders { get; set; } = new List<OrderEntity>();
     }

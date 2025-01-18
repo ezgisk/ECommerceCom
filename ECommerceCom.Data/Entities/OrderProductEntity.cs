@@ -12,33 +12,33 @@ namespace ECommerceCom.Data.Entities
         public int ProductId { get; set; } // Foreign Key
         public ProductEntity Product { get; set; } // Navigation Property
 
-        public int Quantity { get; set; } // Ürün Adedi
+        public int Quantity { get; set; } // Product Quantity
 
         public class OrderProductConfiguration : IEntityTypeConfiguration<OrderProductEntity>
         {
             public void Configure(EntityTypeBuilder<OrderProductEntity> builder)
             {
-                // Composite Key (OrderId ve ProductId)
+                // Composite Key (OrderId and ProductId)
                 builder.HasKey(op => new { op.OrderId, op.ProductId });
 
-                // OrderId ile ilişki tanımı
+                // Defining the relationship with OrderId
                 builder.HasOne(op => op.Order)
                        .WithMany(o => o.OrderProducts)
                        .HasForeignKey(op => op.OrderId)
-                       .OnDelete(DeleteBehavior.Cascade); // Silme davranışı
+                       .OnDelete(DeleteBehavior.Cascade); // Deletion behavior
 
-                // ProductId ile ilişki tanımı
+                // Defining the relationship with ProductId
                 builder.HasOne(op => op.Product)
                        .WithMany()
                        .HasForeignKey(op => op.ProductId)
-                       .OnDelete(DeleteBehavior.Restrict); // Silme davranışı
+                       .OnDelete(DeleteBehavior.Restrict); // Deletion behavior
 
-                // Quantity alanı için zorunlu yapılandırma
+                // Making the Quantity field required
                 builder.Property(op => op.Quantity)
                        .IsRequired();
 
-                // Ek kurallar: ID'yi yoksay
-                builder.Ignore(op => op.Id); // Eğer BaseEntity içinde Id varsa ve kullanılmıyorsa
+                // Additional rules: Ignore the Id if it's in BaseEntity and not needed
+                builder.Ignore(op => op.Id); // If Id in BaseEntity is not used
             }
         }
     }

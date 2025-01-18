@@ -114,7 +114,7 @@ namespace ECommerceCom.WepApi.Controllers
                 TotalAmount = updateOrderRequest.TotalAmount,
                 OrderProductIds = updateOrderRequest.OrderProductIds,
                 CustomerId = updateOrderRequest.CustomerId,
-                ProductQuantities = updateOrderRequest.ProductQuantities // Product Quantities ekleniyor
+                ProductQuantities = updateOrderRequest.ProductQuantities 
             };
 
             var result = await _orderService.UpdateOrder(updateOrderDto);

@@ -9,7 +9,7 @@ namespace ECommerceCom.WepApi.Models
         public int Id { get; set; }
 
         [Required]
-        [EmailAddress(ErrorMessage = "Geçerli bir email adresi giriniz.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         public string Email { get; set; }
 
         [Required]

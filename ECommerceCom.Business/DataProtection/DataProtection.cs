@@ -13,13 +13,11 @@ namespace ECommerceCom.Business.DataProtection
         public DataProtection(IDataProtectionProvider provider)
         {
             _protector = provider.CreateProtector("ECommerceApp-security-v1");
-            
         }
         public string Protect(string text)
         {
             return _protector.Protect(text);
         }
-
         public string UnProtect(string protextedText)
         {
             return _protector.Unprotect(protextedText);
